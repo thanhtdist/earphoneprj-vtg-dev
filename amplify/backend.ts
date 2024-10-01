@@ -1,13 +1,13 @@
 import { defineBackend } from '@aws-amplify/backend';
 import { Stack } from "aws-cdk-lib";
 import {
-  AuthorizationType,
-  CognitoUserPoolsAuthorizer,
+  //AuthorizationType,
+  //CognitoUserPoolsAuthorizer,
   Cors,
   LambdaIntegration,
   RestApi,
 } from "aws-cdk-lib/aws-apigateway";
-import { Policy, PolicyStatement } from "aws-cdk-lib/aws-iam";
+//import { Policy, PolicyStatement } from "aws-cdk-lib/aws-iam";
 // import { auth } from './auth/resource';
 // import { data } from './data/resource';
 import { createMeeting } from './functions/create-meeting/resource';
@@ -33,8 +33,8 @@ const backend = defineBackend({
 const apiStack = backend.createStack("api-stack");
 
 // create a new REST API
-const meetingRestApi = new RestApi(apiStack, "MeetingRestApi", {
-  restApiName: "MeetingRestApi",
+const meetingRestApi = new RestApi(apiStack, "MeetingVTGRestApi", {
+  restApiName: "MeetingVTGRestApi",
   deploy: true,
   deployOptions: {
     stageName: "dev",
@@ -114,8 +114,8 @@ meetingPath.addMethod("POST", createMeetingLambdaIntegration);
 // );
 // Add attendee API
 
-const attendeeRestApi = new RestApi(apiStack, "AttendeeRestApi", {
-  restApiName: "AttendeeRestApi",
+const attendeeRestApi = new RestApi(apiStack, "AttendeeVTGRestApi", {
+  restApiName: "AttendeeVTGRestApi",
   deploy: true,
   deployOptions: {
     stageName: "dev",
@@ -152,8 +152,8 @@ attendeePath.addMethod("POST", attendeeLambdaIntegration);
 //itemsPath.addMethod("PUT", lambdaIntegration);
 
 // MediaPipeline
-const mediaPipelineRestApi = new RestApi(apiStack, "MediaPipelineRestApi", {
-  restApiName: "MediaPipelineRestApi",
+const mediaPipelineRestApi = new RestApi(apiStack, "MediaPipelineVTGRestApi", {
+  restApiName: "MediaPipelineVTGRestApi",
   deploy: true,
   deployOptions: {
     stageName: "dev",
