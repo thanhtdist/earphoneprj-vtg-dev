@@ -1,0 +1,1 @@
+npm install express aws-sdk body-parser cors
