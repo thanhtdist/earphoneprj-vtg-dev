@@ -8,7 +8,7 @@ import {
   RestApi,
 } from "aws-cdk-lib/aws-apigateway";
 //import { Policy, PolicyStatement } from "aws-cdk-lib/aws-iam";
-// import { auth } from './auth/resource';
+import { auth } from './auth/resource';
 // import { data } from './data/resource';
 import { createMeeting } from './functions/create-meeting/resource';
 import { getMeeting } from './functions/get-meeting/resource';
@@ -20,7 +20,7 @@ import { stopMediaPipeline } from './functions/stop-media-pipeline/resource';
  * @see https://docs.amplify.aws/react/build-a-backend/ to add storage, functions, and more
  */
 const backend = defineBackend({
-  // auth,
+  auth,
   // data,
   createMeeting,
   getMeeting,

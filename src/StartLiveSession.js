@@ -1,11 +1,15 @@
 import React, { useState } from 'react';
 import {
-  createMeeting, 
+  createMeeting,
   createAttendee,
   //createRecording,
   //stopRecording,
   //postItem,
   getMeeting,
+  createAppInstanceUsers,
+  listUsers,
+  createChanel,
+  addUserToChannel,
 } from './api';
 import {
   DefaultDeviceController,
@@ -15,21 +19,50 @@ import {
   MeetingSessionConfiguration,
 } from 'amazon-chime-sdk-js';
 import './StartLiveSession.css';  // Importing the new CSS file for responsiveness
+import { Authenticator } from '@aws-amplify/ui-react';
+import ChatMessage from './ChatMessage';
+import Config from './Config';
+import { getCurrentUser } from 'aws-amplify/auth';
 
 function StartLiveSession() {
+  const [channelArn, setChannelArn] = useState('');
   const [meetingSession, setMeetingSession] = useState(null);
   const [meeting, setMeeting] = useState('');
   //const [mediaPipelineId, setMediaPipelineId] = useState('');
   const [selectedAudioInput, setSelectedAudioInput] = useState('');
   const [audioInputDevices, setAudioInputDevices] = useState([]);
 
+  //const userArn = 'arn:aws:chime:us-east-1:647755634525:app-instance/dec63f1a-bff4-48f9-a75e-2575ca8036a9/user/user001'; // Example ARN
+  const [userArn, setUserArn] = useState('');
+
   const startMeeting = async () => {
+
+    const listUsersResponse = await listUsers();
+    console.log("List app users at Host", listUsersResponse);
+
+    const { username, userId, signInDetails } = await getCurrentUser();
+
+    console.log("Host username", username);
+    console.log("Host user id", userId);
+    console.log("Host sign-in details", signInDetails);
+    // Create userArn/ channelArn
+    //const userID = 'e45834d8-8081-7080-3c1b-cb836aee5aa6';
+    const userArn = createAppInstanceUsers(userId);
+    // console.log("Create App Instance User Response", userArn.AppInstanceUserArn);
+    const channel = await createChanel(userArn);
+    console.log(`Start Channel: ${channel.ChannelArn}`);
+    await addUserToChannel(channel.ChannelArn, userArn);
+    setUserArn(userArn);
+    setChannelArn(channel.ChannelArn);
+
+    // Create meeting and attendee
     const meeting = await createMeeting();  // Create a new meeting
     setMeeting(meeting);
     console.log(`Meeting: ${meeting.MeetingId}`);
     const getMeetingResult = await getMeeting(meeting.MeetingId);
     console.log("getMeetingResult", getMeetingResult);
     const attendee = await createAttendee(meeting.MeetingId, `host-${Date.now()}`);  // Create host attendee
+
     console.log(`Attendee: ${attendee.AttendeeId}`);
     initializeMeetingSession(meeting, attendee);  // Initialize host session to broadcast audio
     //startRecording(meeting.MeetingId);  // Start capture pipeline for recording
@@ -117,10 +150,10 @@ function StartLiveSession() {
         console.error("Error fetching RTC stats:", error);
       }
 
-      setTimeout(reportStats, 5000); 
+      setTimeout(reportStats, 5000);
     };
 
-    setTimeout(reportStats, 1000); 
+    setTimeout(reportStats, 1000);
   };
 
   const handleAudioInputChange = (event) => {
@@ -130,27 +163,40 @@ function StartLiveSession() {
   };
 
   return (
-    <div className="container">
-      {!meeting && (
-        <button onClick={startMeeting}>Start Live Session</button>
-      )}
-      {meeting && (
-        <>
-          <p>Meeting ID: {meeting.MeetingId}</p>
-          <h3>Select Audio Input Device (Microphone)</h3>
-          <select value={selectedAudioInput} onChange={handleAudioInputChange}>
-            {audioInputDevices.map(device => (
-              <option key={device.deviceId} value={device.deviceId}>
-                {device.label}
-              </option>
-            ))}
-          </select>
-          {selectedAudioInput && (<button onClick={startLive}>Start</button>)}
-          {selectedAudioInput && (<button onClick={stopMeeting}>Stop</button>)}
-          {/* <button onClick={stopMeeting}>Stop</button> */}
-        </>
-      )}
-    </div>
+    <Authenticator>
+      {({ signOut, user }) => {
+        return (
+          <main>
+            <h1>Hello {user?.username}</h1>
+            <button onClick={signOut}>Sign out</button>
+            <div className="container">
+              {!meeting && (
+                <button onClick={startMeeting}>Start Live Session</button>
+              )}
+              {meeting && (
+                <>
+                  <p>Meeting ID: {meeting.MeetingId}</p>
+                  <p>Channel ID: {channelArn}</p>
+                  <h3>Select Audio Input Device (Microphone)</h3>
+                  <select value={selectedAudioInput} onChange={handleAudioInputChange}>
+                    {audioInputDevices.map(device => (
+                      <option key={device.deviceId} value={device.deviceId}>
+                        {device.label}
+                      </option>
+                    ))}
+                  </select>
+                  {selectedAudioInput && (<button onClick={startLive}>Start</button>)}
+                  {selectedAudioInput && (<button onClick={stopMeeting}>Stop</button>)}
+                  {/* <button onClick={stopMeeting}>Stop</button> */}
+                  {/* Add ChatComponent here */}
+                  <ChatMessage userArn={userArn} sessionId={Config.sessionId} channelArn={channelArn} />
+                </>
+              )}
+            </div>
+          </main>
+        );
+      }}
+    </Authenticator>
   );
 }
 

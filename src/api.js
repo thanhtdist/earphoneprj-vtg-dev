@@ -1,7 +1,103 @@
 // src/api.js
 import { get, post } from 'aws-amplify/api';
+import {
+  ChimeSDKIdentityClient,
+  //CreateAppInstanceUserCommand,
+  ListAppInstanceUsersCommand,
+} from "@aws-sdk/client-chime-sdk-identity"; // ES Modules import
+
+import {
+  ChimeSDKMessagingClient,
+  CreateChannelCommand,
+  CreateChannelMembershipCommand,
+  SendChannelMessageCommand
+} from '@aws-sdk/client-chime-sdk-messaging';
+import Config from './Config';
 const { v4: uuid } = require('uuid');
 const API_URL = 'http://localhost:4000';
+
+export const createAppInstanceUsers = (appInstanceUserId) =>
+  `${Config.appInstanceArn}/user/${appInstanceUserId}`;
+
+
+export const chimeSDKIdentityClient = () =>
+  new ChimeSDKIdentityClient({
+    region: 'us-east-1',
+    // credentials: {
+    //   accessKeyId: Config.accessKeyId, // Ensure these are set properly
+    //   secretAccessKey: Config.secretAccessKey,
+    // }
+  });
+
+export const chimeSDKMessagingClient = () =>
+  new ChimeSDKMessagingClient({
+    region: 'us-east-1',
+    // credentials: {
+    //   accessKeyId: Config.accessKeyId, // Ensure these are set properly
+    //   secretAccessKey: Config.secretAccessKey,
+    // }
+  });
+
+export async function listUsers() {
+  const input = {
+    AppInstanceArn: Config.appInstanceArn,
+  };
+  const command = new ListAppInstanceUsersCommand(input);
+  try {
+    const response = await chimeSDKIdentityClient().send(command);
+    console.log(response);
+    return response;
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+export async function createChanel(userArn) {
+  const input = {
+    AppInstanceArn: Config.appInstanceArn,
+    Name: 'LiveSession',
+    Mode: "UNRESTRICTED",
+    Privacy: "PUBLIC",
+    ClientRequestToken: `token-${Date.now()}`,
+    ChimeBearer: userArn
+  }
+  const command = new CreateChannelCommand(input);
+  const response = await chimeSDKMessagingClient().send(command);
+  console.log("Create Channel Response", response);
+  return response;
+}
+
+export async function addUserToChannel(channelArn, userArn) {
+  const input = { // CreateChannelMembershipRequest
+    ChannelArn: channelArn, // required
+    MemberArn: userArn, // required
+    Type: "DEFAULT", // required
+    ChimeBearer: userArn, // required
+  };
+  const command = new CreateChannelMembershipCommand(input);
+  const response = await chimeSDKMessagingClient().send(command);
+  console.log("Add User to Channel Response", response);
+}
+
+
+export async function sendMessage(channelArn, userArn, inputMessage) {
+
+ // Send message using the Chime SDK Messaging Client
+ const input = {
+  ChannelArn: channelArn, // Replace with your Channel ARN
+  Content: inputMessage, // The actual message content
+  Type: 'STANDARD', // or 'CONTROL' depending on your needs
+  Persistence: 'PERSISTENT', // 'PERSISTENT' to store the message or 'NON_PERSISTENT' for ephemeral messages
+  ClientRequestToken: new Date().getTime().toString(), // Unique token for idempotency
+  ChimeBearer: userArn, // The ARN of the user sending the message
+};
+
+  // Use the Chime SDK to send the message
+  const command = new SendChannelMessageCommand(input);
+  const response = await chimeSDKMessagingClient().send(command);
+  console.log("Send message", response);
+}
+
 
 // Function to create a meeting
 export async function createMeeting() {
@@ -19,7 +115,7 @@ export async function createMeeting() {
   // return result.data;
   try {
     const restOperation = post({
-      apiName: 'MeetingRestApi',
+      apiName: 'MeetingVTGRestApi',
       path: 'meeting',
       options: {
         body: {
@@ -48,7 +144,7 @@ export async function getMeeting(meetingId) {
   // return data.meeting;
   try {
     const restOperation = get({
-      apiName: 'MeetingRestApi',
+      apiName: 'MeetingVTGRestApi',
       path: 'meeting/?meetingId=' + meetingId,
     });
     const { body } = await restOperation.response;
@@ -74,7 +170,7 @@ export async function createAttendee(meetingId, externalUserId) {
   // return result.data;
   try {
     const restOperation = post({
-      apiName: 'AttendeeRestApi',
+      apiName: 'AttendeeVTGRestApi',
       path: 'attendee',
       options: {
         body: {

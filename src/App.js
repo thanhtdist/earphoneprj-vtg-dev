@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import LiveViewer from './LiveViewer'; 
 import StartLiveSession from './StartLiveSession';
 import './App.css';  // Importing the updated CSS for responsiveness
-
+import '@aws-amplify/ui-react/styles.css';
 function App() {
   return (
     <>
