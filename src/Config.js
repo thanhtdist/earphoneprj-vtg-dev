@@ -28,7 +28,11 @@ const appConfig = {
     //process.env.REACT_APP_MY_APP_AWS_ACCESS_KEY_ID
     //process.env.REACT_APP_MY_APP_AWS_SECRET_ACCESS_KEY
     sessionId: 'sessiondemo',
+    // accessKeyId: '',
+    // secretAccessKey: '',
     accessKeyId: process.env.REACT_APP_MY_APP_AWS_ACCESS_KEY_ID,
-    secretAccessKey: process.env.REACT_APP_MY_APP_AWS_SECRET_ACCESS_KEY
+    secretAccessKey: process.env.REACT_APP_MY_APP_AWS_SECRET_ACCESS_KEY,
+    HostIDTest: 'e45834d8-8081-7080-3c1b-cb836aee5aa6',
+    ListenerIDTest: 'a4c894e8-c021-7097-8ff0-f639dca1f3fb',
 };
 export default appConfig;

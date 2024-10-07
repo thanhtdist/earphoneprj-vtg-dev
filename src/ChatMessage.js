@@ -14,7 +14,6 @@ import {
   PrefetchSortBy    // Import PrefetchSortBy
 } from 'amazon-chime-sdk-js';
 import './ChatMessage.css';
-import { fetchAuthSession } from '@aws-amplify/auth';
 import Config from './Config';
 
 const ChatMessage = ({ userArn, channelArn, sessionId }) => {
@@ -27,9 +26,6 @@ const ChatMessage = ({ userArn, channelArn, sessionId }) => {
   useEffect(() => {
     const initializeMessagingSession = async () => {
       const logger = new ConsoleLogger('SDK', LogLevel.INFO);
-      const authSession = await fetchAuthSession();
-      console.log('AWS authSession: ', authSession);
-      console.log('AWS Credentials: ', authSession.credentials);
       const chime = new ChimeSDKMessagingClient({
         region: Config.region, 
         credentials: {
