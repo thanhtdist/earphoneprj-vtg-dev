@@ -15,7 +15,7 @@ import {
 } from 'amazon-chime-sdk-js';
 import './ChatMessage.css';
 import { fetchAuthSession } from '@aws-amplify/auth';
-//import Config from './Config';
+import Config from './Config';
 
 const ChatMessage = ({ userArn, channelArn, sessionId }) => {
   console.log("Chat userArn", userArn);
@@ -31,11 +31,11 @@ const ChatMessage = ({ userArn, channelArn, sessionId }) => {
       console.log('AWS authSession: ', authSession);
       console.log('AWS Credentials: ', authSession.credentials);
       const chime = new ChimeSDKMessagingClient({
-        region: 'us-east-1', 
-        // credentials: {
-        //   accessKeyId: Config.accessKeyId, // Ensure these are set properly
-        //   secretAccessKey: Config.secretAccessKey,
-        // },
+        region: Config.region, 
+        credentials: {
+          accessKeyId: Config.accessKeyId, // Ensure these are set properly
+          secretAccessKey: Config.secretAccessKey,
+        },
       });
 
       const configuration = new MessagingSessionConfiguration(userArn, sessionId, undefined, chime);

@@ -22,20 +22,20 @@ export const createAppInstanceUsers = (appInstanceUserId) =>
 
 export const chimeSDKIdentityClient = () =>
   new ChimeSDKIdentityClient({
-    region: 'us-east-1',
-    // credentials: {
-    //   accessKeyId: Config.accessKeyId, // Ensure these are set properly
-    //   secretAccessKey: Config.secretAccessKey,
-    // }
+    region: Config.region,
+    credentials: {
+      accessKeyId: Config.accessKeyId, // Ensure these are set properly
+      secretAccessKey: Config.secretAccessKey,
+    }
   });
 
 export const chimeSDKMessagingClient = () =>
   new ChimeSDKMessagingClient({
-    region: 'us-east-1',
-    // credentials: {
-    //   accessKeyId: Config.accessKeyId, // Ensure these are set properly
-    //   secretAccessKey: Config.secretAccessKey,
-    // }
+    region: Config.region,
+    credentials: {
+      accessKeyId: Config.accessKeyId, // Ensure these are set properly
+      secretAccessKey: Config.secretAccessKey,
+    }
   });
 
 export async function listUsers() {
