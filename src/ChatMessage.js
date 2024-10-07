@@ -132,6 +132,11 @@ const ChatMessage = ({ userArn, channelArn, sessionId }) => {
           value={inputMessage}
           onChange={(e) => setInputMessage(e.target.value)}
           placeholder="Type a message..."
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              sendMessageClick();
+            }
+          }}
         />
         <button onClick={sendMessageClick}>Send</button>
       </div>

@@ -39,9 +39,9 @@ function LiveViewer() {
       alert("Meeting ID is required");
       return;
     }
-    const channelId = prompt("Enter channel ARN:");
+    const channelId = prompt("Enter channel ID:");
     if (!channelId) {
-      alert("Channel ARN is required");
+      alert("Channel ID is required");
       return;
     }
 
