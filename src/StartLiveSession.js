@@ -26,6 +26,7 @@ import { getCurrentUser } from 'aws-amplify/auth';
 
 function StartLiveSession() {
   const [channelArn, setChannelArn] = useState('');
+  const [channelID, setChannelID] = useState('');
   const [meetingSession, setMeetingSession] = useState(null);
   const [meeting, setMeeting] = useState('');
   //const [mediaPipelineId, setMediaPipelineId] = useState('');
@@ -50,10 +51,15 @@ function StartLiveSession() {
     const userArn = createAppInstanceUsers(Config.HostIDTest);
     // console.log("Create App Instance User Response", userArn.AppInstanceUserArn);
     const channel = await createChanel(userArn);
+    console.log("Channel", channel);
+    const channel_splits = channel.ChannelArn.split('/');
+    console.log("Channel ID", channel_splits[channel_splits.length - 1]);
+    setChannelID(channel_splits[channel_splits.length - 1]);
     console.log(`Start Channel: ${channel.ChannelArn}`);
     await addUserToChannel(channel.ChannelArn, userArn);
     setUserArn(userArn);
     setChannelArn(channel.ChannelArn);
+
 
     // Create meeting and attendee
     const meeting = await createMeeting();  // Create a new meeting
@@ -176,7 +182,7 @@ function StartLiveSession() {
               {meeting && (
                 <>
                   <p>Meeting ID: {meeting.MeetingId}</p>
-                  <p>Channel ID: {channelArn}</p>
+                  <p>Channel ID: {channelID}</p>
                   <h3>Select Audio Input Device (Microphone)</h3>
                   <select value={selectedAudioInput} onChange={handleAudioInputChange}>
                     {audioInputDevices.map(device => (
