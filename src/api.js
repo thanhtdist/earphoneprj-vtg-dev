@@ -2,8 +2,9 @@
 import { get, post } from 'aws-amplify/api';
 import {
   ChimeSDKIdentityClient,
-  //CreateAppInstanceUserCommand,
+  CreateAppInstanceUserCommand,
   ListAppInstanceUsersCommand,
+  DescribeAppInstanceUserCommand
 } from "@aws-sdk/client-chime-sdk-identity"; // ES Modules import
 
 import {
@@ -16,8 +17,8 @@ import Config from './Config';
 const { v4: uuid } = require('uuid');
 const API_URL = 'http://localhost:4000';
 
-export const createAppInstanceUsers = (appInstanceUserId) =>
-  `${Config.appInstanceArn}/user/${appInstanceUserId}`;
+// export const createAppInstanceUsers = (appInstanceUserId) =>
+//   `${Config.appInstanceArn}/user/${appInstanceUserId}`;
 
 
 export const chimeSDKIdentityClient = () =>
@@ -37,6 +38,46 @@ export const chimeSDKMessagingClient = () =>
       secretAccessKey: Config.secretAccessKey,
     }
   });
+
+
+export async function describeAppInstanceUser(userID) {
+  const input = {
+    AppInstanceUserArn: `${Config.appInstanceArn}/user/${userID}`, // required
+  };
+  const command = new DescribeAppInstanceUserCommand(input);
+  try {
+    const response = await chimeSDKIdentityClient().send(command);
+    console.log(response);
+    return response;
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+
+export async function createAppInstanceUsers(userID, userName) {
+  const checkAppInstanceArn = await describeAppInstanceUser(userID);
+  console.log("Check App Instance Arn", checkAppInstanceArn);
+  if (checkAppInstanceArn && checkAppInstanceArn.AppInstanceUser) {
+    console.log("User already exists");
+    return checkAppInstanceArn.AppInstanceUser;
+  }
+  const input = {
+    AppInstanceArn: Config.appInstanceArn, // required
+    AppInstanceUserId: userID, // required
+    Name: userName, // required
+    ClientRequestToken: `token-${Date.now()}`, // required
+  };
+  console.log("Create App Instance User Input", input);
+  const command = new CreateAppInstanceUserCommand(input);
+  try {
+    const response = await chimeSDKIdentityClient().send(command);
+    console.log(response);
+    return response;
+  } catch (error) {
+    console.error(error);
+  }
+}
 
 export async function listUsers() {
   const input = {
@@ -82,15 +123,15 @@ export async function addUserToChannel(channelArn, userArn) {
 
 export async function sendMessage(channelArn, userArn, inputMessage) {
 
- // Send message using the Chime SDK Messaging Client
- const input = {
-  ChannelArn: channelArn, // Replace with your Channel ARN
-  Content: inputMessage, // The actual message content
-  Type: 'STANDARD', // or 'CONTROL' depending on your needs
-  Persistence: 'PERSISTENT', // 'PERSISTENT' to store the message or 'NON_PERSISTENT' for ephemeral messages
-  ClientRequestToken: new Date().getTime().toString(), // Unique token for idempotency
-  ChimeBearer: userArn, // The ARN of the user sending the message
-};
+  // Send message using the Chime SDK Messaging Client
+  const input = {
+    ChannelArn: channelArn, // Replace with your Channel ARN
+    Content: inputMessage, // The actual message content
+    Type: 'STANDARD', // or 'CONTROL' depending on your needs
+    Persistence: 'PERSISTENT', // 'PERSISTENT' to store the message or 'NON_PERSISTENT' for ephemeral messages
+    ClientRequestToken: new Date().getTime().toString(), // Unique token for idempotency
+    ChimeBearer: userArn, // The ARN of the user sending the message
+  };
 
   // Use the Chime SDK to send the message
   const command = new SendChannelMessageCommand(input);
